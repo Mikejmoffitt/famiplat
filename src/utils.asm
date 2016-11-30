@@ -68,3 +68,27 @@ spr_init:
 	cpx #$00
 	bne @clroam_loop
 	rts
+	
+; ============================
+; BG puts function; Max len 256
+; Pointer to string in temp.w
+; Column in temp3
+; Row in temp4
+; ============================
+puts:
+	ldy temp3			; Upper byte of VRAM Address
+	ldx temp4			; Lower byte of VRAM Address
+
+	bit PPUSTATUS
+	sty PPUADDR
+	stx PPUADDR
+
+	ldy #$00
+@printloop:
+	lda (temp), y
+	beq @finished
+	sta PPUDATA
+	iny
+	bne @printloop
+@finished:
+	rts

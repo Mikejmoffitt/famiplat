@@ -51,6 +51,28 @@ OAM_BASE		= $200
 	sty :- + 1
 .endmacro
 
+; Print an ASCIIZ string
+.macro print string, xpos, ypos
+	lda #<string
+	sta temp
+	lda #>string
+	sta temp+1
+
+	lda ypos
+	clc
+	asl
+	asl
+	asl
+	asl
+	asl
+	clc
+	adc #$20
+	sta temp3
+	lda xpos
+	sta temp3+1
+
+	jsr puts
+.endmacro
 ; OAM Access macros
 
 ; for storing the accumulator (A) as a propery for the specified sprite

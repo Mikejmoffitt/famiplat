@@ -69,6 +69,11 @@ nmi_vector:
 
 	rti
 
+test_string:
+.asciiz "   Hello, NES World. Is this        packet quest too hard?"
+
+
+
 ; ============================
 ; IRQ ISR
 ; Unused; can be wired to cartridge for special hardware. The UNROM mapper does
@@ -97,7 +102,7 @@ reset_vector:
 	stx PPUMASK			; Disable rendering
 	stx DMCFREQ			; Disable DMC IRQs
 
-; Set an upper bank
+; Set an u5per bank
 	bank_load #$00
 
 ; Wait for first vblank
@@ -161,17 +166,12 @@ main_entry:
 	; Clear sprites
 	jsr spr_init
 
-	; Put scroll at 0, 0
-	bit PPUSTATUS
-	lda #$00
-	sta PPUSCROLL ; X scroll
-	sta PPUSCROLL ; Y scroll
-
 	; Switch the upper half of PRG memory to Bank E (please see note below)
 	bank_load #$0E
 
 	; Load in a palette
 	ppu_load_bg_palette sample_palette_data
+	ppu_load_spr_palette sample_spr_palette_data
 	
 	; Load in CHR tiles to VRAM for BG
 	; Remember, BG data starts at $0000 - we must specify the upper byte of
@@ -183,10 +183,19 @@ main_entry:
 
 	; Finally, bring in a nametable so the background will draw something.
 	; The first nametable begins at $2000, so we specify $20(00).
-	ppu_write_8kbit sample_nametable_data, #$20
+	;ppu_write_8kbit sample_nametable_data, #$20
 
 	; Duplicate the nametable into the other screen as well.
 	ppu_write_8kbit sample_nametable_data, #$24
+
+
+	print test_string, 1, 1
+
+	; Put scroll at 0, 0
+	bit PPUSTATUS
+	lda #$00
+	sta PPUSCROLL ; X scroll
+	sta PPUSCROLL ; Y scroll
 
 	; Bring the PPU back up.
 	jsr wait_nmi
@@ -222,10 +231,16 @@ sample_nametable_data:
 	.incbin "resources/nametable.nam"
 
 sample_palette_data:
+	.byte	$0F, $06, $27, $30
+	.byte	$0F, $0C, $23, $30
+	.byte	$0F, $01, $23, $30
+	.byte	$0F, $01, $23, $30
+
+sample_spr_palette_data:
 	.byte	$0F, $01, $23, $30
 	.byte	$0F, $01, $23, $30
 	.byte	$0F, $01, $23, $30
-	.byte	$0F, $01, $23, $30
+	.byte	$0F, $0F, $23, $2A
 	; For a large project, palette data like this is often separated
 	; into a separate file and .incbin'd in, just like the other data.
 
