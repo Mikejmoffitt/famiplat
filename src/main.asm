@@ -1,35 +1,9 @@
 ; iNES Header
 .include "header.asm"
-
-; =============================
-; Zero-page and main RAM
-; Variables, flags, etc.
-; =============================
-.segment "ZEROPAGE"
-; Fast variables
-temp:		.res 1
-temp2:		.res 1
-temp3:		.res 1
-temp4:		.res 1
-temp5:		.res 1
-temp6:		.res 1
-temp7:		.res 1
-temp8:		.res 1
-pad_1:		.res 1
-pad_1_prev:	.res 1
-pad_2:		.res 1
-pad_2_prev:	.res 1
-
-.segment "RAM"
-; Flags for PPU control
-ppumask_config:	.res 1
-ppuctrl_config:	.res 1
-vblank_flag:	.res 1
-xscroll:	.res 2
-yscroll:	.res 2
-
-; Some useful macros
+.include "ram.asm"
 .include "cool_macros.asm"
+.include "utils.asm"
+.include "player.asm"
 
 ; ============================
 ; PRG bank F
@@ -39,7 +13,9 @@ yscroll:	.res 2
 ; utility code should go here.
 ; ============================
 .segment "BANKF"
-.include "utils.asm"
+
+bank_load_table:
+	.byte 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 
 ; ============================
 ; NMI ISR
@@ -68,11 +44,6 @@ nmi_vector:
 	pla				; Restore registers from stack
 
 	rti
-
-test_string:
-.asciiz "   Hello, NES World. Is this        packet quest too hard?"
-
-
 
 ; ============================
 ; IRQ ISR
@@ -132,14 +103,14 @@ reset_vector:
 	bne @waitvbl2
 
 ; PPU configuration for actual use
-	ldx #%10001000		; Nominal PPUCTRL settings:
-				; NMI enable
-				; Slave mode (don't change this!)
-				; 8x8 sprites
-				; BG at $0000
-				; SPR at $1000
-				; VRAM auto-inc 1
-				; Nametable at $2000
+	ldx #%10010000		; Nominal PPUCTRL settings:
+	;     |||||||___________ Nametable at $2000
+	;     ||||||____________ VRAM inc at 1
+	;     |||||_____________ SPR at $0000
+	;     ||||______________ BG at $1000
+	;     |||_______________ 8x8 Sprites
+	;     ||________________ Slave mode (don't change this!)
+	;     |_________________ NMI enable
 	stx ppuctrl_config
 	stx PPUCTRL
 
@@ -167,7 +138,7 @@ main_entry:
 	jsr spr_init
 
 	; Switch the upper half of PRG memory to Bank E (please see note below)
-	bank_load #$0E
+	; bank_load #$0E
 
 	; Load in a palette
 	ppu_load_bg_palette sample_palette_data
@@ -189,13 +160,19 @@ main_entry:
 	ppu_write_8kbit sample_nametable_data, #$24
 
 
-	print test_string, 1, 1
+	; print test_string, 1, 1
 
-	; Put scroll at 0, 0
-	bit PPUSTATUS
 	lda #$00
-	sta PPUSCROLL ; X scroll
-	sta PPUSCROLL ; Y scroll
+	sta xscroll
+	sta xscroll+1
+	sta yscroll
+	sta yscroll+1
+
+	lda #$30
+	sta player_xpos + 1
+	sta player_ypos + 1
+	sta player_xpos
+	sta player_ypos
 
 	; Bring the PPU back up.
 	jsr wait_nmi
@@ -203,16 +180,22 @@ main_entry:
 
 main_top_loop:
 
+	jsr read_joy_safe
+
 	; Run game logic here
+	jsr player_render
 
 	; End of game logic frame; wait for NMI (vblank) to begin
 	jsr wait_nmi
 
 	; Commit VRAM updates while PPU is disabled in vblank
-	;ppu_disable
+	ppu_disable
+
+	spr_dma
+	ppu_load_scroll xscroll, yscroll
 
 	; Re-enable PPU for the start of a new frame
-	;ppu_enable
+	ppu_enable
 	jmp main_top_loop; loop forever
 
 ; While our main code is in Bank F, the simple palette data (colors),
@@ -221,7 +204,7 @@ main_top_loop:
 ; Addresses $C000-$FFFF are hardwired to Bank F in the 2A03's data space "PRG",
 ; but the upper half of ROM space at $8000-BFFF can be switched out when the
 ; programmer desires. 
-.segment "BANKE"
+.segment "BANKF"
 
 ; The sample graphics resources.
 sample_chr_data:

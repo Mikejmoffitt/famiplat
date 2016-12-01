@@ -40,13 +40,54 @@ OAM_BASE		= $200
 	sta PPUCTRL
 .endmacro
 
+; Add a 16-bit memory value to addr
+.macro sum16 addr, val
+	clc
+	lda addr
+	adc val
+	sta addr
+	lda addr+1
+	adc val+1
+	sta addr+1
+.endmacro
+
+.macro add16 addr, amt
+	clc
+	lda addr
+	adc amt
+	sta addr
+	lda addr+1
+	adc #$00
+	sta addr+1
+.endmacro
+
+.macro sub16 addr, amt
+	sec
+	lda addr
+	sbc amt
+	sta addr
+	lda addr+1
+	sbc #$00
+	sta addr+1
+.endmacro
+
+; Negate a 16-bit address
+.macro neg16 addr
+	sec
+	lda #$00
+	sbc addr
+	sta addr
+	lda #$00
+	sbc addr+1
+	sta addr+1
+.endmacro
+
 ; Switch UNROM/UOROM banks
 ; This macro exists to ensure that the data being presented by the PRG ROM
 ; chip doesn't conflict with the data the 2A03 is writing to the data bus, as
 ; UNROM and UOROM make no provisions to prevent a bus conflict, which could
 ; damage one or more driving chips over time if not handled correct.
 .macro bank_load num
-:
 	ldy num
 	sty :- + 1
 .endmacro
@@ -217,38 +258,6 @@ OAM_BASE		= $200
 	inx
 	cpx #$10
 	bne :-
-.endmacro
-
-; Add a 16-bit memory value to addr
-.macro sum16 addr, val
-	clc
-	lda addr
-	adc val
-	sta addr
-	lda addr+1
-	adc val+1
-	sta addr+1
-.endmacro
-
-.macro sub16 addr, amt
-	sec
-	lda addr
-	sbc amt
-	sta addr
-	lda addr+1
-	sbc amt+1
-	sta addr+1
-.endmacro
-
-; Negate a 16-bit address
-.macro neg16 addr
-	sec
-	lda #$00
-	sbc addr
-	sta addr
-	lda #$00
-	sbc addr+1
-	sta addr+1
 .endmacro
 
 ; Copy binary nametable + attribute data into VRAM
