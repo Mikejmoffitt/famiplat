@@ -1,3 +1,73 @@
+
+
+; =====================================
+; Main movement routines
+player_movement:
+	; TODO: Tail calls for minor speed boost once things are set
+	jsr player_handle_input
+	jsr player_apply_deltas
+	jsr player_delta_limits
+	jsr player_decel
+	jsr player_col_check
+	rts
+
+; =====================================
+; Decelerate the player running on the ground
+player_decel:
+; Determine sign of dx
+	lda player_dx+1
+	bpl @dx_pos
+	; If dx is negative, set a flag to mark it as such.
+	lda #$01
+	sta temp
+	; Invert dx
+	neg16 player_dx
+	key_isdown pad_1, btn_left
+	; Exit if key is held
+	jmp @decel_done
+:
+	jmp @post_negate
+
+@dx_pos:
+	key_isdown pad_1, btn_right
+	rts
+:
+	lda #$00
+	sta temp
+
+@post_negate:
+
+	; If dx is already zero, get out of here
+	bne @nonzero
+	lda player_dx
+	bne @nonzero
+	rts
+
+@nonzero:
+	sub16 player_dx, #PL_DDX
+	; If dx has done negative, zero it out (underflow)
+	lda player_dx+1
+	bmi @dx_went_negative
+	jmp @decel_done
+
+@dx_went_negative:
+	; Dx underflowed; zero it out.
+	lda #$00
+	sta player_dx
+	sta player_dx+1
+	; Fall-through to @decel_done
+
+@decel_done:
+	; If dx was negative to begin with, put it back.
+	lda temp
+	beq :+
+	neg16 player_dx
+:
+	rts
+
+
+; =====================================
+; Applies limits to the player's movement deltas
 player_delta_limits:
 ; Restrict falling speed
 	lda player_dy+1
@@ -50,6 +120,8 @@ player_delta_limits:
 :
 	rts
 
+; =====================================
+; Modify player state based on controller inputs
 player_handle_input:
 	key_isdown pad_1, btn_left
 	sub16 player_dx, #PL_DDX
@@ -58,16 +130,33 @@ player_handle_input:
 	add16 player_dx, #PL_DDX
 : ; not pressed
 	lda player_is_grounded
-	beq :+
-	key_isdown pad_1, btn_a
-	
+	beq @post_jump_check
+
+; Do a jump
+	key_down pad_1, btn_a
 	lda #PL_JUMP_STR
 	sta player_dy+1
 	lda #PL_JUMP_STR_EX
 	sta player_dy
+	jmp @skip_jump_cancel
 :
+@post_jump_check:
+	key_isup pad_1, btn_a
+	lda player_is_grounded
+	bne @skip_jump_cancel
+; Check for dy restriction if A is not held
+	lda player_dy+1
+	cmp #PL_JUMP_CUTOFF
+	bpl @skip_jump_cancel
+	lda #PL_JUMP_CUTOFF
+	sta player_dy+1
+:
+	
+@skip_jump_cancel:
 	rts
 
+; =====================================
+; Perform collision checks
 player_col_check:
 	lda player_ypos+1
 	cmp #207
@@ -86,15 +175,10 @@ player_col_check:
 	sta player_is_grounded
 	rts
 
+; =====================================
+; Commit dx, dy, and ddx (gravity)
 player_apply_deltas:
 	sum16 player_xpos, player_dx
 	sum16 player_ypos, player_dy
 	add16 player_dy, #PL_GRAVITY
-	jsr player_delta_limits
-	rts
-
-player_movement:
-	jsr player_handle_input
-	jsr player_apply_deltas
-	jsr player_col_check
 	rts

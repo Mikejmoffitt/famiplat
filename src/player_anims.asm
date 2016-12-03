@@ -59,7 +59,7 @@ pl_mapping_run3:
 	.byte	<-23, $1B, %00000000, <-12
 	.byte	<-23, $1C, %00000000, <-4
 	.byte	<-23, $1D, %00000000, 4
-	.byte	<-27, $3C, %00000000, 12
+	.byte	<-23, $3C, %00000000, 8
 	.byte	<-15, $2B, %00000000, <-12
 	.byte	<-15, $2C, %00000000, <-4
 	.byte	<-15, $2D, %00000000, 4
@@ -130,6 +130,48 @@ pl_mapping_run8:
 	.byte	<-6,  $B3, %00000000, 7
 	.byte	MAP_END
 
+pl_mapping_jump1:
+	.byte	<-32, $85, %00000000, <-9
+	.byte	<-32, $86, %00000000, <-1
+	.byte	<-32, $87, %00000000, 7
+	.byte	<-24, $95, %00000000, <-9
+	.byte	<-24, $96, %00000000, <-1
+	.byte	<-24, $97, %00000000, 7
+	.byte	<-16, $A4, %00000000, <-17
+	.byte	<-16, $A5, %00000000, <-9
+	.byte	<-16, $A6, %00000000, <-1
+	.byte	<-8,  $B4, %00000000, <-17
+	.byte	<-8,  $A4, %11000000, <-9
+	.byte	MAP_END
+
+pl_mapping_jump2:
+	.byte	<-32, $88, %00000000, <-9
+	.byte	<-32, $89, %00000000, <-1
+	.byte	<-32, $8a, %00000000, 7
+	.byte	<-24, $98, %00000000, <-9
+	.byte	<-24, $99, %00000000, <-1
+	.byte	<-24, $9a, %00000000, 7
+	.byte	<-16, $A4, %00000000, <-17
+	.byte	<-16, $A5, %00000000, <-9
+	.byte	<-16, $A6, %00000000, <-1
+	.byte	<-8,  $B4, %00000000, <-17
+	.byte	<-8,  $A4, %11000000, <-9
+	.byte	MAP_END
+
+pl_mapping_jump3:
+	.byte	<-32, $a8, %00000000, <-9
+	.byte	<-32, $a9, %00000000, <-1
+	.byte	<-32, $aa, %00000000, 7
+	.byte	<-24, $b8, %00000000, <-9
+	.byte	<-24, $b9, %00000000, <-1
+	.byte	<-24, $ba, %00000000, 7
+	.byte	<-16, $A4, %00000000, <-17
+	.byte	<-16, $A5, %00000000, <-9
+	.byte	<-16, $A6, %00000000, <-1
+	.byte	<-8,  $B4, %00000000, <-17
+	.byte	<-8,  $A4, %11000000, <-9
+	.byte	MAP_END
+
 pl_mapping_dummy:
 	.byte	<-$20, <-$20, 0, 0
 	.byte	MAP_END
@@ -181,6 +223,22 @@ pl_anim_run:
 	.addr	pl_mapping_run5
 	.byte	5, 0
 
+pl_anim_jump:
+	.byte	3
+	.byte	0
+	.addr	pl_mapping_jump1
+	.byte	3, 0
+	.addr	pl_mapping_jump2
+	.byte	3, 0
+	.addr	pl_mapping_jump3
+	.byte	3, 0
+
+pl_anim_fall:
+	.byte	1
+	.byte	0
+	.addr	pl_mapping_run4
+	.byte	8, 0
+
 ; ============ Animation Number Map ====================
 ; An array containing the addresses of animation numbers. Used to
 ; number to an animation script.
@@ -188,6 +246,9 @@ pl_anim_num_map:
 	.addr	pl_anim_dummy
 	.addr	pl_anim_stand
 	.addr	pl_anim_run
+	.addr	pl_anim_jump
+	.addr	pl_anim_fall
+
 
 ; Character graphics
 

@@ -228,8 +228,8 @@ sample_nametable_data:
 	.incbin "resources/nametable.nam"
 
 sample_palette_data:
-	.byte	$0F, $03, $15, $36
-	.byte	$0F, $0C, $23, $30
+	.byte	$0F, $05, $16, $27
+	.byte	$0F, $0C, $2B, $39
 	.byte	$0F, $01, $23, $30
 	.byte	$0F, $01, $23, $30
 

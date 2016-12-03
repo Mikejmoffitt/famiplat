@@ -5,10 +5,35 @@
 ; No particular pre-conditions; this is a wrapper for the various subroutines
 ; which draw both players to the screen.
 player_render:
+	jsr player_choose_direction
 	jsr player_choose_animation
 	jsr player_choose_mapping
 	jsr player_animate
 	jsr player_draw
+	rts
+
+
+player_choose_direction:
+	; Is player on the ground?
+	lda player_is_grounded
+	bne :+
+	rts
+:
+; If so, change the direction based on the sign of dx
+	lda player_dx
+	bne @nonzero
+	lda player_dx+1
+	bne @nonzero
+	rts	; Exit if dx is totally zero
+@nonzero:
+	lda player_dx+1
+	bmi :+
+	lda #$00
+	sta player_dir
+	rts
+:
+	lda #$01
+	sta player_dir
 	rts
 
 ; Based on player state (position, action, etc) choose an animation sequence
@@ -17,7 +42,27 @@ player_render:
 ;	If appropriate, the player's animation number will have changed, and
 ;	the animation address will update as well.
 player_choose_animation:
+	lda player_is_grounded
+	beq @airborne
+	lda player_dx
+	bne @nonzero_dx
+	lda player_dx+1
+	bne @nonzero_dx
+	lda #ANIM_STAND
+	jsr player_set_anim_num
+	rts
+@nonzero_dx:
 	lda #ANIM_RUN
+	jsr player_set_anim_num
+	rts
+@airborne:
+	lda player_dy+1
+	bmi @dy_neg
+	lda #ANIM_FALL
+	jsr player_set_anim_num
+	rts
+@dy_neg:
+	lda #ANIM_JUMP
 	jsr player_set_anim_num
 	rts
 
