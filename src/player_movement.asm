@@ -156,16 +156,80 @@ player_handle_input:
 	rts
 
 ; =====================================
+; Pre:
+;	X has X offset from player to check
+; 	Y has Y offset from player to check
+; Post:
+;	A returns nametable tile
+; Mangles temp, temp2, A, Y
+player_nametable_check:
+	; Load base nametable address (in PRG space)
+	lda current_nt
+	sta addr_ptr
+	lda current_nt+1
+	sta addr_ptr+1
+
+	; Factor in positional arguments
+	tya
+	sta temp
+	txa
+	sta temp2
+
+	bank_load current_nt_bank
+
+	lda player_ypos+1
+	clc
+	adc temp
+	and #%11111000
+	sta temp
+	; Add (current_row * 4) to address
+	add16 addr_ptr, temp
+	add16 addr_ptr, temp
+	add16 addr_ptr, temp
+	add16 addr_ptr, temp
+	; A now contains the upper part of the nametable lookup 
+	; Add X position to get horizontal index
+	lda player_xpos+1
+	clc
+	adc temp2
+	lsr
+	lsr
+	lsr
+	and #$1F
+	sta temp
+	add16 addr_ptr, temp
+	ldy #$00
+	lda (addr_ptr), y
+	rts
+
+; =====================================
+; Sets A to $80 if player is on a solid
+;
+player_col_check_ground:
+	ldx #PL_BOTTOM_L
+	ldy #$00
+	jsr player_nametable_check
+	and #$80
+	sta temp3
+	ldx #PL_BOTTOM_R
+	ldy #$00
+	jsr player_nametable_check
+	and #$80
+	ora temp3
+	rts
+
+; =====================================
 ; Perform collision checks
 player_col_check:
-	lda player_ypos+1
-	cmp #207
-	bcs :+
+	jsr player_col_check_ground
+	cmp #$00
+	bne :+
 	lda #$00
 	sta player_is_grounded
 	rts
 :
-	lda #207
+	lda player_ypos+1
+	and #$F8
 	sta player_ypos+1
 	lda #$00
 	sta player_ypos

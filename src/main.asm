@@ -3,6 +3,7 @@
 .include "ram.asm"
 .include "cool_macros.asm"
 .include "utils.asm"
+.include "bg.asm"
 .include "player.asm"
 
 ; ============================
@@ -173,6 +174,13 @@ main_entry:
 
 	; Duplicate the nametable into the other screen as well.
 	ppu_write_8kbit sample_nametable_data, #$24
+
+	lda #<sample_nametable_data
+	sta current_nt
+	lda #>sample_nametable_data
+	sta current_nt+1
+	lda #$0E
+	sta current_nt_bank
 
 	; print test_string, 1, 1
 

@@ -18,6 +18,9 @@ PL_JUMP_STR = <-$06
 PL_JUMP_STR_EX = <-$75
 PL_JUMP_CUTOFF = <-$03
 
+PL_BOTTOM_L = <-4
+PL_BOTTOM_R = 4
+
 .segment "BANKF"
 .include "player_movement.asm"
 .include "player_anims.asm"

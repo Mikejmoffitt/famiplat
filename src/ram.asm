@@ -52,4 +52,5 @@ btn_down:	.res 1
 btn_left:	.res 1
 btn_right:	.res 1
 
-bg_col_map:	.res 240
+current_nt:	.res 2
+current_nt_bank:.res 1
