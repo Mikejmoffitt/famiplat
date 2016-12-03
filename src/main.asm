@@ -73,9 +73,6 @@ reset_vector:
 	stx PPUMASK			; Disable rendering
 	stx DMCFREQ			; Disable DMC IRQs
 
-; Set an u5per bank
-	bank_load #$00
-
 ; Wait for first vblank
 @waitvbl1:
 	lda #$80
@@ -103,7 +100,7 @@ reset_vector:
 	bne @waitvbl2
 
 ; PPU configuration for actual use
-	ldx #%10010000		; Nominal PPUCTRL settings:
+	ldx #%10010000         ; Nominal PPUCTRL settings:
 	;     |||||||___________ Nametable at $2000
 	;     ||||||____________ VRAM inc at 1
 	;     |||||_____________ SPR at $0000
@@ -114,12 +111,31 @@ reset_vector:
 	stx ppuctrl_config
 	stx PPUCTRL
 
-	ldx #%00011110
+	ldx #%00011000
+	;     ||||||||__________ Greyscale off
+	;     |||||||___________ BG left column disable
+	;     ||||||____________ SPR left column disable
+	;     |||||_____________ BG enable
+	;     ||||______________ SPR enable
+	;     |||_______________ No red emphasis
+	;     ||________________ No green emphasis
+	;     |_________________ No blue emphasis
 	stx ppumask_config
+
 	stx PPUMASK
+
+	jsr spr_init
 
 	ppu_enable
 
+; Build button comparison table
+	lda #$80
+	ldx #$00
+@build_controller_table:
+	sta button_table, x
+	inx
+	lsr
+	bne @build_controller_table
 	jmp main_entry ; GOTO main loop
 
 ; =============================================================================
@@ -134,11 +150,10 @@ main_entry:
 	; the video in the middle of a frame.
 	ppu_disable
 
-	; Clear sprites
-	jsr spr_init
-
 	; Switch the upper half of PRG memory to Bank E (please see note below)
-	; bank_load #$0E
+	;lda #$0E
+	;sta bank_load_table + $0E
+	bank_load #$0E
 
 	; Load in a palette
 	ppu_load_bg_palette sample_palette_data
@@ -154,11 +169,10 @@ main_entry:
 
 	; Finally, bring in a nametable so the background will draw something.
 	; The first nametable begins at $2000, so we specify $20(00).
-	;ppu_write_8kbit sample_nametable_data, #$20
+	ppu_write_8kbit sample_nametable_data, #$20
 
 	; Duplicate the nametable into the other screen as well.
 	ppu_write_8kbit sample_nametable_data, #$24
-
 
 	; print test_string, 1, 1
 
@@ -180,9 +194,9 @@ main_entry:
 
 main_top_loop:
 
-	jsr read_joy_safe
-
 	; Run game logic here
+	jsr read_joy_safe
+	jsr player_movement
 	jsr player_render
 
 	; End of game logic frame; wait for NMI (vblank) to begin
@@ -204,7 +218,7 @@ main_top_loop:
 ; Addresses $C000-$FFFF are hardwired to Bank F in the 2A03's data space "PRG",
 ; but the upper half of ROM space at $8000-BFFF can be switched out when the
 ; programmer desires. 
-.segment "BANKF"
+.segment "BANKE"
 
 ; The sample graphics resources.
 sample_chr_data:
@@ -214,15 +228,15 @@ sample_nametable_data:
 	.incbin "resources/nametable.nam"
 
 sample_palette_data:
-	.byte	$0F, $06, $27, $30
+	.byte	$0F, $03, $15, $36
 	.byte	$0F, $0C, $23, $30
 	.byte	$0F, $01, $23, $30
 	.byte	$0F, $01, $23, $30
 
 sample_spr_palette_data:
-	.byte	$0F, $01, $23, $30
-	.byte	$0F, $01, $23, $30
-	.byte	$0F, $01, $23, $30
+	.byte	$0F, $01, $30, $27
+	.byte	$0F, $02, $24, $30
+	.byte	$0F, $06, $26, $30
 	.byte	$0F, $0F, $23, $2A
 	; For a large project, palette data like this is often separated
 	; into a separate file and .incbin'd in, just like the other data.

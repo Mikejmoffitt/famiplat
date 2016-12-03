@@ -12,7 +12,7 @@ LDFLAGS := -Ln $(LABELSNAME)
 
 TOPLEVEL := main.asm
 
-EXECUTABLE := main.nes
+EXECUTABLE := plat.nes
 
 .PHONY: all build $(EXECUTABLE)
 
@@ -32,3 +32,6 @@ run: $(EXECUTABLE)
 	
 debug: $(EXECUTABLE)
 	wine tools/fceuxw/fceux.exe ./$(EXECUTABLE)
+
+test: $(EXECUTABLE)
+	tools/edn8usb $(EXECUTABLE)

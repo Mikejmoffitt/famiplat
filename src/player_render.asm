@@ -17,8 +17,7 @@ player_render:
 ;	If appropriate, the player's animation number will have changed, and
 ;	the animation address will update as well.
 player_choose_animation:
-	; Check for the block counter
-	lda #ANIM_STAND
+	lda #ANIM_RUN
 	jsr player_set_anim_num
 	rts
 
@@ -37,7 +36,7 @@ player_set_anim_num:
 
 	sta temp3				; Store number argument
 	cmp player_anim_num
-;	beq @done	; If we're already in this animation, don't bother
+	beq @done	; If we're already in this animation, don't bother
 	sta player_anim_num
 	lda #$00
 	sta player_anim_cnt
@@ -128,7 +127,7 @@ player_animate:
 	lda player_anim_addr + 1
 	sta temp2
 
-	add16 temp, #$04		; Point at the duration marker
+	add16 temp, #$04		; Point at first frame's duration
 
 	lda player_anim_frame ; Get current frame #
 	asl a

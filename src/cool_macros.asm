@@ -88,8 +88,9 @@ OAM_BASE		= $200
 ; UNROM and UOROM make no provisions to prevent a bus conflict, which could
 ; damage one or more driving chips over time if not handled correct.
 .macro bank_load num
-	ldy num
-	sty :- + 1
+	lda num
+	tax
+	sta bank_load_table, x
 .endmacro
 
 ; Print an ASCIIZ string
