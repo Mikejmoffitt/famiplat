@@ -207,20 +207,89 @@ player_nametable_check:
 ;
 player_col_check_ground:
 	ldx #PL_BOTTOM_L
-	ldy #$00
+	ldy #PL_BOTTOM_DIST
 	jsr player_nametable_check
 	and #$80
 	sta temp3
 	ldx #PL_BOTTOM_R
-	ldy #$00
+	ldy #PL_BOTTOM_DIST
 	jsr player_nametable_check
 	and #$80
 	ora temp3
 	rts
 
+player_col_check_sides:
+; Check sides
+	lda player_dx+1
+	bne @nonzero_dx
+	lda player_dx
+	bne @nonzero_dx
+	jmp @post_dx
+@nonzero_dx:
+	; Is dx negative?
+	lda player_dx+1
+	bmi @neg_dx
+	; No, dx is positive
+	ldx #PL_RIGHT_DIST
+	ldy #PL_RIGHT_B
+	jsr player_nametable_check
+	sta temp3
+	ldx #PL_RIGHT_DIST
+	ldy #PL_RIGHT_M1
+	jsr player_nametable_check
+	sta temp4
+	ldx #PL_RIGHT_DIST
+	ldy #PL_RIGHT_M2
+	jsr player_nametable_check
+	sta temp5
+	ldx #PL_RIGHT_DIST
+	ldy #PL_RIGHT_T
+	jsr player_nametable_check
+	sta temp6
+	ora temp5
+	ora temp4
+	ora temp3
+	and #$80
+	beq @post_dx
+	; Colliding on the right side. Zero out dx.
+	lda #$00
+	sta player_dx
+	sta player_dx+1
+
+	; Snap player to right side
+	lda player_xpos+1
+	clc
+	adc #PL_RIGHT_DIST
+	and #$F8
+	sec
+	sbc #PL_RIGHT_DIST
+	sta player_xpos+1
+	lda #$00
+	sta player_xpos
+	rts
+	; Calculate coordinates of wall
+	txa
+	sta temp
+	lda player_xpos+1
+	clc
+	adc temp
+	; A now has X position of the right of the player. Snap it to 8px.
+	and #$F8
+	; Now it is snapped to the 8px boundary. Subtract distance for new X.
+	sec
+	sbc #PL_RIGHT_DIST
+	sta player_xpos+1
+
+@neg_dx:
+
+@post_dx:
+
+	rts
+
 ; =====================================
 ; Perform collision checks
 player_col_check:
+	jsr player_col_check_sides
 	jsr player_col_check_ground
 	cmp #$00
 	bne :+
@@ -229,7 +298,11 @@ player_col_check:
 	rts
 :
 	lda player_ypos+1
+	clc
+	adc #PL_BOTTOM_DIST
 	and #$F8
+	sec
+	sbc #PL_BOTTOM_DIST
 	sta player_ypos+1
 	lda #$00
 	sta player_ypos

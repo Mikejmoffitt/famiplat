@@ -172,9 +172,6 @@ main_entry:
 	; The first nametable begins at $2000, so we specify $20(00).
 	ppu_write_8kbit sample_nametable_data, #$20
 
-	; Duplicate the nametable into the other screen as well.
-	ppu_write_8kbit sample_nametable_data, #$24
-
 	lda #<sample_nametable_data
 	sta current_nt
 	lda #>sample_nametable_data
@@ -182,13 +179,11 @@ main_entry:
 	lda #$0E
 	sta current_nt_bank
 
-	; print test_string, 1, 1
-
 	lda #$00
 	sta xscroll
-	sta xscroll+1
 	sta yscroll
 	sta yscroll+1
+	sta xscroll+1
 
 	lda #$30
 	sta player_xpos + 1

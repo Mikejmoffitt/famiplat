@@ -240,8 +240,8 @@ player_draw:
 	beq @end_frame			; Y-Pos was MAP_END; terminate loop
 	clc
 	adc player_ypos + 1; Offset from player's Y center
-	sec
-	sbc #$01			; Bring up one pixel to get out of the ground
+	;sec
+	;sbc #$01			; Bring up one pixel to get out of the ground
 	sbc yscroll			; Factor in scrolling position
 	sta OAM_BASE, y
 	sta temp4
