@@ -14,11 +14,12 @@ player_render:
 
 
 player_choose_direction:
-	; Is player on the ground?
-	lda player_is_grounded
-	bne :+
-	rts
-:
+; TODO: Vet whether or not direction should be changeable in mid-air
+;	; Is player on the ground?
+;	lda player_is_grounded
+;	bne @do_dir_sel
+;	rts
+@do_dir_sel:
 ; If so, change the direction based on the sign of dx
 	lda player_dx
 	bne @nonzero

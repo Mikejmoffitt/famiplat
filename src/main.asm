@@ -112,10 +112,10 @@ reset_vector:
 	stx ppuctrl_config
 	stx PPUCTRL
 
-	ldx #%00011000
+	ldx #%00011110
 	;     ||||||||__________ Greyscale off
-	;     |||||||___________ BG left column disable
-	;     ||||||____________ SPR left column disable
+	;     |||||||___________ BG left column
+	;     ||||||____________ SPR left column
 	;     |||||_____________ BG enable
 	;     ||||______________ SPR enable
 	;     |||_______________ No red emphasis
@@ -185,7 +185,7 @@ main_entry:
 	sta yscroll+1
 	sta xscroll+1
 
-	lda #$30
+	lda #$80
 	sta player_xpos + 1
 	sta player_ypos + 1
 	sta player_xpos
@@ -231,9 +231,9 @@ sample_nametable_data:
 	.incbin "resources/nametable.nam"
 
 sample_palette_data:
-	.byte	$0F, $05, $16, $27
-	.byte	$0F, $0C, $2B, $39
-	.byte	$0F, $01, $23, $30
+	.byte	$0F, $0B, $1A, $29
+	.byte	$0F, $03, $04, $15
+	.byte	$0F, $06, $16, $27
 	.byte	$0F, $01, $23, $30
 
 sample_spr_palette_data:

@@ -168,14 +168,13 @@ player_nametable_check:
 	sta addr_ptr
 	lda current_nt+1
 	sta addr_ptr+1
+	bank_load current_nt_bank
 
 	; Factor in positional arguments
 	tya
 	sta temp
 	txa
 	sta temp2
-
-	bank_load current_nt_bank
 
 	lda player_ypos+1
 	clc
@@ -203,100 +202,62 @@ player_nametable_check:
 	rts
 
 ; =====================================
+; Checks for collision above the player
+player_col_check_top:
+	lda player_dy+1
+	bne @nonzero_dy
+	lda player_dy+1
+	bne @nonzero_dy
+	rts
+
+@nonzero_dy:
+	ldx #PL_TOP_L
+	ldy #PL_TOP_DIST
+	jsr player_nametable_check
+	sta temp3
+	ldx #PL_TOP_R
+	ldy #PL_TOP_DIST
+	jsr player_nametable_check
+	ora temp3
+	and #$80
+	bne @touched
+	rts
+@touched:
+	lda player_ypos+1
+	clc
+	adc #$08
+	adc #PL_TOP_DIST
+	and #$F8
+	sec
+	sbc #PL_TOP_DIST
+	sta player_ypos+1
+	lda #$00
+	sta player_dy
+	sta player_dy+1
+	sta player_ypos
+	rts
+
+; =====================================
 ; Sets A to $80 if player is on a solid
 ;
 player_col_check_ground:
 	ldx #PL_BOTTOM_L
 	ldy #PL_BOTTOM_DIST
 	jsr player_nametable_check
-	and #$80
 	sta temp3
 	ldx #PL_BOTTOM_R
 	ldy #PL_BOTTOM_DIST
 	jsr player_nametable_check
-	and #$80
-	ora temp3
-	rts
-
-player_col_check_sides:
-; Check sides
-	lda player_dx+1
-	bne @nonzero_dx
-	lda player_dx
-	bne @nonzero_dx
-	jmp @post_dx
-@nonzero_dx:
-	; Is dx negative?
-	lda player_dx+1
-	bmi @neg_dx
-	; No, dx is positive
-	ldx #PL_RIGHT_DIST
-	ldy #PL_RIGHT_B
-	jsr player_nametable_check
-	sta temp3
-	ldx #PL_RIGHT_DIST
-	ldy #PL_RIGHT_M1
-	jsr player_nametable_check
-	sta temp4
-	ldx #PL_RIGHT_DIST
-	ldy #PL_RIGHT_M2
-	jsr player_nametable_check
-	sta temp5
-	ldx #PL_RIGHT_DIST
-	ldy #PL_RIGHT_T
-	jsr player_nametable_check
-	sta temp6
-	ora temp5
-	ora temp4
 	ora temp3
 	and #$80
-	beq @post_dx
-	; Colliding on the right side. Zero out dx.
-	lda #$00
-	sta player_dx
-	sta player_dx+1
-
-	; Snap player to right side
-	lda player_xpos+1
-	clc
-	adc #PL_RIGHT_DIST
-	and #$F8
-	sec
-	sbc #PL_RIGHT_DIST
-	sta player_xpos+1
-	lda #$00
-	sta player_xpos
-	rts
-	; Calculate coordinates of wall
-	txa
-	sta temp
-	lda player_xpos+1
-	clc
-	adc temp
-	; A now has X position of the right of the player. Snap it to 8px.
-	and #$F8
-	; Now it is snapped to the 8px boundary. Subtract distance for new X.
-	sec
-	sbc #PL_RIGHT_DIST
-	sta player_xpos+1
-
-@neg_dx:
-
-@post_dx:
-
-	rts
-
-; =====================================
-; Perform collision checks
-player_col_check:
-	jsr player_col_check_sides
-	jsr player_col_check_ground
-	cmp #$00
 	bne :+
+	; If it's not a collision, mark the player as not grounded
 	lda #$00
 	sta player_is_grounded
 	rts
-:
+: ; A ground collision was made:
+
+	;Snap to 8px boundary
 	lda player_ypos+1
 	clc
 	adc #PL_BOTTOM_DIST
@@ -308,8 +269,84 @@ player_col_check:
 	sta player_ypos
 	sta player_dy
 	sta player_dy+1
+
+	; Mark player as grounded
 	lda #$01
 	sta player_is_grounded
+	rts
+
+; =====================================
+player_col_check_sides:
+	lda player_dx+1
+	bne @nonzero_dx
+	lda player_dx
+	bne @nonzero_dx
+	rts
+
+@nonzero_dx:
+	; Is dx negative?
+	lda player_dx+1
+	bmi @neg_dx
+	ldx #PL_SIDE_DIST
+	jmp @colcheck
+@neg_dx:
+	ldx #<-PL_SIDE_DIST
+	jmp @colcheck
+@colcheck:
+	; Run checks on the four points
+	ldy #PL_SIDE_B
+	jsr player_nametable_check
+	sta temp3
+	ldy #PL_SIDE_M1
+	jsr player_nametable_check
+	sta temp4
+	ldy #PL_SIDE_M2
+	jsr player_nametable_check
+	sta temp5
+	ldy #PL_SIDE_T
+	jsr player_nametable_check
+	ora temp5
+	ora temp4
+	ora temp3
+	and #$80
+	bne @is_solid
+	rts
+
+@is_solid:
+	lda #$00
+	sta player_dx
+	sta player_dx+1
+
+	txa
+	sta temp
+	; Snap player to collision point
+	sta player_xpos
+	lda player_xpos+1
+	clc
+	adc #$04
+	adc temp
+	and #$F8
+	sec
+	sbc temp
+	sta player_xpos+1
+
+	lda temp
+	bmi @neg_offset
+	rts
+
+@neg_offset:
+	lda player_xpos+1
+	sec
+	sbc #$01
+	sta player_xpos+1
+	rts
+
+; =====================================
+; Perform collision checks for one frame.
+player_col_check:
+	jsr player_col_check_sides
+	jsr player_col_check_top
+	jsr player_col_check_ground
 	rts
 
 ; =====================================
