@@ -170,14 +170,13 @@ main_entry:
 
 	; Finally, bring in a nametable so the background will draw something.
 	; The first nametable begins at $2000, so we specify $20(00).
-	ppu_write_8kbit sample_nametable_data, #$20
-
-	lda #<sample_nametable_data
-	sta current_nt
-	lda #>sample_nametable_data
-	sta current_nt+1
 	lda #$0E
 	sta current_nt_bank
+	lda #<nt1
+	sta current_nt
+	lda #>nt1
+	sta current_nt+1
+	jsr load_room
 
 	lda #$00
 	sta xscroll
@@ -201,6 +200,7 @@ main_top_loop:
 	jsr read_joy_safe
 	jsr player_movement
 	jsr player_render
+	jsr eval_leaving_room
 
 	; End of game logic frame; wait for NMI (vblank) to begin
 	jsr wait_nmi
@@ -221,26 +221,118 @@ main_top_loop:
 ; Addresses $C000-$FFFF are hardwired to Bank F in the 2A03's data space "PRG",
 ; but the upper half of ROM space at $8000-BFFF can be switched out when the
 ; programmer desires. 
+
+; =====================================
+; Nametable in current_nt, bank in current_nt_bank
+load_room:
+	bank_load current_nt_bank
+	lda current_nt
+	sta addr_ptr
+	lda current_nt+1
+	sta addr_ptr+1
+
+	bit PPUSTATUS
+	lda #$20
+	sta PPUADDR
+	lda #$00
+	sta PPUADDR
+	ldy #$00
+:
+	lda (addr_ptr), y		; Offset within both source and dest.
+	sta PPUDATA
+	iny
+	bne :-
+	add16 addr_ptr, #$80
+	add16 addr_ptr, #$80
+:
+	lda (addr_ptr), y		; Offset within both source and dest.
+	sta PPUDATA
+	iny
+	bne :-
+	add16 addr_ptr, #$80
+	add16 addr_ptr, #$80
+:
+	lda (addr_ptr), y		; Offset within both source and dest.
+	sta PPUDATA
+	iny
+	bne :-
+	add16 addr_ptr, #$80
+	add16 addr_ptr, #$80
+:
+	lda (addr_ptr), y		; Offset within both source and dest.
+	sta PPUDATA
+	iny
+	bne :-
+	add16 addr_ptr, #$80
+	add16 addr_ptr, #$80
+
+	rts
+
+eval_leaving_room:
+	lda player_xpos+1
+	cmp #248
+	bcc @not_rightside
+@rightside:
+	jsr wait_nmi
+	ppu_disable
+	lda #$0E
+	sta current_nt_bank
+	lda #<nt2
+	sta current_nt
+	lda #>nt2
+	sta current_nt+1
+	jsr load_room
+	lda #16
+	sta player_xpos+1
+	lda #10
+	sta player_xpos
+	rts
+
+@not_rightside:
+	cmp #08
+	bcc @leftside
+	rts
+
+@leftside:
+	jsr wait_nmi
+	ppu_disable
+	lda #$0E
+	sta current_nt_bank
+	lda #<nt1
+	sta current_nt
+	lda #>nt1
+	sta current_nt+1
+	jsr load_room
+	lda #246
+	sta player_xpos+1
+	lda #$00
+	sta player_xpos
+	rts
+
+
 .segment "BANKE"
 
 ; The sample graphics resources.
 sample_chr_data:
 	.incbin "resources/chr.chr"
 
-sample_nametable_data:
+nt1:
 	.incbin "resources/nametable.nam"
+nt2:
+	.incbin "resources/nametable2.nam"
 
 sample_palette_data:
 	.byte	$0F, $0B, $1A, $29
-	.byte	$0F, $03, $04, $15
+	.byte	$0F, $2D, $00, $10
 	.byte	$0F, $06, $16, $27
 	.byte	$0F, $01, $23, $30
+	.byte	$0F, $2C, $24, $2A
 
 sample_spr_palette_data:
 	.byte	$0F, $01, $30, $27
 	.byte	$0F, $02, $24, $30
 	.byte	$0F, $06, $26, $30
-	.byte	$0F, $0F, $23, $2A
+	.byte	$0F, $2C, $24, $2A
 	; For a large project, palette data like this is often separated
 	; into a separate file and .incbin'd in, just like the other data.
 
