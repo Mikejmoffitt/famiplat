@@ -324,7 +324,7 @@ nt2:
 sample_palette_data:
 	.byte	$0F, $0B, $1A, $29
 	.byte	$0F, $2D, $00, $10
-	.byte	$0F, $06, $16, $27
+	.byte	$0F, $07, $17, $27
 	.byte	$0F, $01, $23, $30
 	.byte	$0F, $2C, $24, $2A
 
