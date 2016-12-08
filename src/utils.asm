@@ -1,11 +1,11 @@
 .segment "BANKF"
 
 wait_nmi:
-	 lda vblank_flag
-	 bne wait_nmi			; Spin here until NMI lets us through
-	 lda #$01
-	 sta vblank_flag
-	 rts
+	lda vblank_flag
+	bne wait_nmi			; Spin here until NMI lets us through
+	lda #$01
+	sta vblank_flag
+	rts
 
 ; Controller reading code from NESDev
 ; Out: A=buttons pressed, where bit 0 is A button

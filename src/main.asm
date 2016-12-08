@@ -170,12 +170,23 @@ main_entry:
 
 	; Finally, bring in a nametable so the background will draw something.
 	; The first nametable begins at $2000, so we specify $20(00).
+
+	lda #$0E
+	sta current_nt_bank
+	lda #<nt2
+	sta current_nt
+	lda #>nt2
+	sta current_nt+1
+	lda #$24
+	jsr load_room
+
 	lda #$0E
 	sta current_nt_bank
 	lda #<nt1
 	sta current_nt
 	lda #>nt1
 	sta current_nt+1
+	lda #$20
 	jsr load_room
 
 	lda #$00
@@ -184,7 +195,7 @@ main_entry:
 	sta yscroll+1
 	sta xscroll+1
 
-	lda #$80
+	lda #$20
 	sta player_xpos + 1
 	sta player_ypos + 1
 	sta player_xpos
@@ -223,20 +234,21 @@ main_top_loop:
 ; programmer desires. 
 
 ; =====================================
-; Nametable in current_nt, bank in current_nt_bank
+; Nametable in current_nt, bank in current_nt_bank, destination in A ($20 or $24)
 load_room:
+	tay
 	bank_load current_nt_bank
-	lda current_nt
-	sta addr_ptr
-	lda current_nt+1
-	sta addr_ptr+1
+	tya
+	ldy current_nt
+	sty addr_ptr
+	ldy current_nt+1
+	sty addr_ptr+1
 
 	bit PPUSTATUS
-	lda #$20
-	sta PPUADDR
-	lda #$00
 	sta PPUADDR
 	ldy #$00
+	sty PPUADDR
+
 :
 	lda (addr_ptr), y		; Offset within both source and dest.
 	sta PPUDATA
@@ -281,6 +293,7 @@ eval_leaving_room:
 	sta current_nt
 	lda #>nt2
 	sta current_nt+1
+	lda #$24
 	jsr load_room
 	lda #16
 	sta player_xpos+1
@@ -323,9 +336,8 @@ nt2:
 
 sample_palette_data:
 	.byte	$0F, $0B, $1A, $29
-	.byte	$0F, $2D, $00, $10
-	.byte	$0F, $07, $17, $27
-	.byte	$0F, $01, $23, $30
+	.byte	$0F, $03, $14, $25
+	.byte	$0F, $06, $16, $27
 	.byte	$0F, $2C, $24, $2A
 
 sample_spr_palette_data:
