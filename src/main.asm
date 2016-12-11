@@ -4,6 +4,7 @@
 .include "cool_macros.asm"
 .include "utils.asm"
 .include "bg.asm"
+.include "metasprite.asm"
 .include "player.asm"
 
 ; ============================
@@ -171,14 +172,14 @@ main_entry:
 	; Finally, bring in a nametable so the background will draw something.
 	; The first nametable begins at $2000, so we specify $20(00).
 
-	lda #$0E
-	sta current_nt_bank
-	lda #<nt2
-	sta current_nt
-	lda #>nt2
-	sta current_nt+1
-	lda #$24
-	jsr load_room
+;	lda #$0E
+;	sta current_nt_bank
+;	lda #<nt2
+;	sta current_nt
+;	lda #>nt2
+;	sta current_nt+1
+;	lda #$24
+;	jsr load_room
 
 	lda #$0E
 	sta current_nt_bank
@@ -195,7 +196,7 @@ main_entry:
 	sta yscroll+1
 	sta xscroll+1
 
-	lda #$20
+	lda #$80
 	sta player_xpos + 1
 	sta player_ypos + 1
 	sta player_xpos
@@ -281,6 +282,7 @@ load_room:
 	rts
 
 eval_leaving_room:
+	rts
 	lda player_xpos+1
 	cmp #248
 	bcc @not_rightside

@@ -21,6 +21,40 @@ BUTTON_RIGHT		= %00000001
 
 OAM_BASE		= $200
 
+; Fixed point fun
+.macro fix12_to_8 num16, dest8
+	lda num16+1
+	and #$0F
+	asl
+	asl
+	asl
+	asl
+	sta dest8
+	lda num16
+	lsr
+	lsr
+	lsr
+	lsr
+	ora dest8
+	sta dest8
+.endmacro
+
+.macro fix8_to_12 num8, dest16
+	lda num8
+	lsr
+	lsr
+	lsr
+	lsr
+	sta dest16+1
+	lda num8
+	asl
+	asl
+	asl
+	asl
+	and #$F0
+
+.endmacro
+
 ; Turn off rendering
 .macro ppu_disable
 	; Disable rendering

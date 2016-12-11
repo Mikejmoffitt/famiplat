@@ -226,89 +226,18 @@ player_animate:
 ; Preconditions:
 ;	addr_ptr is loaded with the address of the animation frame struct.
 player_draw:
-; Pre-loop entry conditions:
-	; addr_ptr is a ZP 16-bit pointer to the base of the animation data to copy from
-	; addr_ptr has initial Y subtracted from it to counter Y's offset
-	; X contains the player state offset (right now it is zero and unused anyway)
-	; temp contains Y + 64, which is the base case to end this loop
-	ldy #$00
-@oam_copy_loop:
-					; Y = OAM Y position
 
-	; Y position
-	lda (addr_ptr), y		; Y pos relative to player
-	cmp #MAP_END			; Check unused flag
-	beq @end_frame			; Y-Pos was MAP_END; terminate loop
-	clc
-	adc player_ypos + 1; Offset from player's Y center
-	;sec
-	;sbc #$01			; Bring up one pixel to get out of the ground
-	sbc yscroll			; Factor in scrolling position
-	sta OAM_BASE, y
-	sta temp4
-	iny				; Y = OAM tile select
-
-	lda (addr_ptr), y
-@tile_store:
-	sta OAM_BASE, y
-	iny				; Y = OAM attributes
-	lda (addr_ptr), y
-
-	; Process X flip for attributes
-	rol a
-	rol a
-	rol a
-	eor player_dir ; X flip
-	ror a
-	ror a
-	ror a
-
-
-	sta OAM_BASE, y
-	iny				; Y = OAM X position
-
-	; Check if tile position needs to be flipped about Y axis (horiz)
+	lda $5555
+	lda player_xpos+1
+	sta temp
+	lda player_ypos+1
+	sta temp2
+;	fix12_to_8 player_xpos, temp
+;	fix12_to_8 player_ypos, temp2
 	lda player_dir
-	beq @noflipx
-	lda #$00
-	sec
-	sbc (addr_ptr), y		; Reverse relative X position
-	sec
-	sbc #$08
-	sec
-	sbc xscroll			; Factor in scrolling position
-	clc
-	adc player_xpos + 1; Offset from player's X center
-	sec
-	sta OAM_BASE, y
-	iny
-	cpy #MAX_PL_SPRITES
-	bne @oam_copy_loop
-	rts
-
-@noflipx:
-	lda (addr_ptr), y		; X pos relative to player
-	clc				; Add one to X offset
-	adc player_xpos + 1; Offset from player's X center
-	sec
-	sbc xscroll			; Factor in scrolling position
-	sta OAM_BASE, y
-	iny
-
-	cpy #MAX_PL_SPRITES
-	bne @oam_copy_loop
-	rts
-
-; This branch is for when a sprite is to be hidden so we can ignore everything
-; other than the Y position
-@end_frame:
-	lda #$FF
-	sta OAM_BASE, y			; Hide this sprite
-	iny
-	iny
-	iny
-	iny
-	cpy #MAX_PL_SPRITES			; Hide all remaining sprites
-	bne @end_frame			; for this player.
+	sta temp3
+	lda #34
+	sta temp4
+	jsr draw_metasprite
 	rts
 

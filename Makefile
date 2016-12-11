@@ -28,7 +28,7 @@ $(EXECUTABLE):
 	$(LD) $(LDFLAGS) -C $(CONFIGNAME) -o $(EXECUTABLE) -m $(MAPNAME) -vm $(OBJNAME)
 
 run: $(EXECUTABLE)
-	fceux ./$(EXECUTABLE)
+	nestopia ./$(EXECUTABLE)
 	
 debug: $(EXECUTABLE)
 	wine tools/fceuxw/fceux.exe ./$(EXECUTABLE)

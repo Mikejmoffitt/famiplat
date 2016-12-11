@@ -22,15 +22,15 @@ PL_BOTTOM_DIST = 1
 PL_BOTTOM_L = <-4
 PL_BOTTOM_R = 4
 
-PL_TOP_DIST = <-24
+PL_TOP_DIST = <-28
 PL_TOP_L = PL_BOTTOM_L
 PL_TOP_R = PL_BOTTOM_R
 
 PL_SIDE_DIST = 6
-PL_SIDE_T = <-22
-PL_SIDE_M1 = <-16
-PL_SIDE_M2 = <-8
-PL_SIDE_B = <-2
+PL_SIDE_T = <-27
+PL_SIDE_M1 = <-22
+PL_SIDE_M2 = <-14
+PL_SIDE_B = <-6
 
 .segment "BANKF"
 .include "player_movement.asm"
