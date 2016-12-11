@@ -12,10 +12,12 @@
 .byte 0
 
 ; Mirroring, save RAM, trainer, mapper low nybble
-.byte $21                                   ; UNROM
+.byte $21                                   ; UOROM
+;.byte $e1                                   ; UNROM-512
 
 ; Vs., PlayChoice-10, NES 2.0, mapper high nybble
 .byte $00
+;.byte $10
 
 ; Size of PRG RAM in 8 KB units
 .byte 0
