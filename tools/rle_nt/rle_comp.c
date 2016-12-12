@@ -5,10 +5,8 @@
 size_t rle_comp(FILE *fin, FILE *fout)
 {
 	size_t bytes = 0;
+	uint8_t count;
 	uint16_t current[2];
-	current[0] = -1;
-	current[1] = -1;
-	uint8_t count = 0;
 
 	current[0] = fgetc(fin);
 	current[1] = fgetc(fin);

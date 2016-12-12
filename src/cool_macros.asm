@@ -85,6 +85,19 @@ OAM_BASE		= $200
 	sta addr+1
 .endmacro
 
+.macro sum24 addr, val
+	clc
+	lda addr
+	adc val
+	sta addr
+	lda addr+1
+	adc val+1
+	sta addr+1
+	lda addr+2
+	adc val+2
+	sta addr+2
+.endmacro
+
 .macro add16 addr, amt
 	clc
 	lda addr
@@ -93,6 +106,19 @@ OAM_BASE		= $200
 	lda addr+1
 	adc #$00
 	sta addr+1
+.endmacro
+
+.macro add24 addr, amt
+	clc
+	lda addr
+	adc amt
+	sta addr
+	lda addr+1
+	adc #$00
+	sta addr+1
+	lda addr+2
+	adc #$00
+	sta addr+2
 .endmacro
 
 .macro sub16 addr, amt
@@ -105,6 +131,19 @@ OAM_BASE		= $200
 	sta addr+1
 .endmacro
 
+.macro sub24 addr, amt
+	sec
+	lda addr
+	sbc amt
+	sta addr
+	lda addr+1
+	sbc #$00
+	sta addr+1
+	lda addr+2
+	sbc #$00
+	sta addr+2
+.endmacro
+
 ; Negate a 16-bit address
 .macro neg16 addr
 	sec
@@ -114,6 +153,19 @@ OAM_BASE		= $200
 	lda #$00
 	sbc addr+1
 	sta addr+1
+.endmacro
+
+.macro neg24 addr
+	sec
+	lda #$00
+	sbc addr
+	sta addr
+	lda #$00
+	sbc addr+1
+	sta addr+1
+	lda #$00
+	sbc addr+2
+	sta addr+2
 .endmacro
 
 ; Switch UNROM/UOROM banks

@@ -179,16 +179,21 @@ main_entry:
 ;	lda #>nt2
 ;	sta current_nt+1
 ;	lda #$24
-;	jsr load_room
+;	jsr load_Room
 
 	lda #$0E
 	sta current_nt_bank
-	lda #<nt1
+	lda #<ntcomp
 	sta current_nt
-	lda #>nt1
+	lda #>ntcomp
 	sta current_nt+1
 	lda #$20
-	jsr load_room
+	jsr decomp_room
+	
+	lda #<col_map
+	sta current_nt
+	lda #>col_map
+	sta current_nt+1
 
 	lda #$00
 	sta xscroll
@@ -226,6 +231,7 @@ main_top_loop:
 	; Re-enable PPU for the start of a new frame
 	ppu_enable
 	jmp main_top_loop; loop forever
+
 
 ; While our main code is in Bank F, the simple palette data (colors),
 ; CHR data (graphics), and Nametable data (layout) is located in another
@@ -335,6 +341,8 @@ nt1:
 	.incbin "resources/nametable.nam"
 nt2:
 	.incbin "resources/nametable2.nam"
+ntcomp:
+	.incbin "resources/nt_comp.bin"
 
 sample_palette_data:
 	.byte	$0F, $0B, $1A, $29

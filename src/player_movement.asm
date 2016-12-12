@@ -204,7 +204,6 @@ player_nametable_check:
 ; =====================================
 ; Checks for collision above the player
 player_col_check_top:
-
 	lda player_dy+1
 	bne @nonzero_dy
 	lda player_dy+1
@@ -345,8 +344,6 @@ player_col_check_sides:
 ; =====================================
 ; Perform collision checks for one frame.
 player_col_check:
-	fix12_to_8 player_xpos, temp7
-	fix12_to_8 player_ypos, temp8
 	jsr player_col_check_sides
 	jsr player_col_check_top
 	jsr player_col_check_ground

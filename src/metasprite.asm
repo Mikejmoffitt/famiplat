@@ -9,7 +9,6 @@ METASPRITE_MAX_TILES = (24*4)
 ;	Put the metasprite structure's address in addr_ptr
 draw_metasprite:
 
-	lda $5555
 	; Normalize the flip flag to exactly #$40
 	lda temp3
 	beq @post_flip_fix
@@ -30,10 +29,7 @@ draw_metasprite:
 	
 
 @oam_copy_loop:
-					; Y = OAM Y position
-
-	lda $5555
-	; Y position
+	; Y = OAM Y position
 	lda (addr_ptr), y		; Y pos relative to metasprite
 	cmp #MAP_END			; Check unused flag
 	beq @end_frame			; Y-Pos was MAP_END; terminate loop
@@ -62,8 +58,8 @@ draw_metasprite:
 	sbc (addr_ptr), y		; Reverse relative X position
 	sec
 	sbc #$08
-	sec
-	sbc xscroll			; Factor in scrolling position
+	;sec
+	;sbc xscroll			; Factor in scrolling position
 	clc
 	adc temp; Offset from sprite's X center
 @no_x_overflow:
@@ -77,8 +73,8 @@ draw_metasprite:
 	lda (addr_ptr), y		; X pos relative to metasprite
 	clc
 	adc temp			; Offset from sprite's X center
-	sec
-	sbc xscroll			; Factor in scrolling position
+	;sec
+	;sbc xscroll			; Factor in scrolling position
 	sta OAM_BASE, y
 	iny
 

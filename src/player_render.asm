@@ -227,7 +227,6 @@ player_animate:
 ;	addr_ptr is loaded with the address of the animation frame struct.
 player_draw:
 
-	lda $5555
 	lda player_xpos+1
 	sta temp
 	lda player_ypos+1
