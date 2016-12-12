@@ -53,7 +53,9 @@ btn_down:	.res 1
 btn_left:	.res 1
 btn_right:	.res 1
 
-col_map:	.res 1024
-
 current_nt:	.res 2
 current_nt_bank:.res 1
+
+.segment "WRAM"
+
+col_map:	.res 1024

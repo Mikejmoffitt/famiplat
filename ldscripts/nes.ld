@@ -10,6 +10,8 @@ MEMORY
     STACK:      start = $100, size=$100, file="";
     OAM:        start = $200, size=$100, file="";
     RAM:        start = $300, size=$500, file="";
+	WRAM:		start = $6000, size=$2000, file="";
+	
     # ROM
     HEADER:     start = 0, size=$10, fill=yes, fillval=$FF;
     ROM0:      start = $8000, size = $4000, type = ro, file = %O, fill=yes, fillval=$00;
@@ -32,10 +34,11 @@ MEMORY
 
 SEGMENTS 
 {
-    ZEROPAGE:   load = ZEROPAGE, type=zp;
-    RAM:        load = RAM, type=bss, define = yes, align = $100;
-
-    HEADER:     load = HEADER;
+    ZEROPAGE:  load = ZEROPAGE, type=zp;
+    RAM:       load = RAM, type=bss, define = yes, align = $100; 
+	WRAM:      load = WRAM, type=bss, define = yes, align = $100; 
+	
+    HEADER:	   load = HEADER;
 
     BANK0:     load = ROM0, type = ro, align = $100, optional = yes;
     BANK1:     load = ROM1, type = ro, align = $100, optional = yes;

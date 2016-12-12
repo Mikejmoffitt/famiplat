@@ -16,11 +16,12 @@
 ;.byte $e1                                   ; UNROM-512
 
 ; Vs., PlayChoice-10, NES 2.0, mapper high nybble
-.byte $00
-;.byte $10
+.byte $00					; UOROM
+;.byte $10					; UNROM-512
+;.byte 
 
 ; Size of PRG RAM in 8 KB units
-.byte 0
+.byte 1
 
 ; NTSC/PAL
 .byte $00

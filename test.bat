@@ -1,0 +1,1 @@
+tools\edn8usb.exe plat.nes
