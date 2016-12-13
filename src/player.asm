@@ -32,7 +32,7 @@ PL_SIDE_M1 = <-22
 PL_SIDE_M2 = <-14
 PL_SIDE_B = <-6
 
-.segment "BANKF"
+.segment "FIXED"
 .include "player_movement.asm"
 .include "player_anims.asm"
 .include "player_render.asm"

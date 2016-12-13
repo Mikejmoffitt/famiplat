@@ -1,6 +1,8 @@
 ; iNES Header
+.include "nes.asm"
 .include "header.asm"
 .include "ram.asm"
+.include "sound.asm"
 .include "cool_macros.asm"
 .include "utils.asm"
 .include "bg.asm"
@@ -14,10 +16,11 @@
 ; Subsequently all code in Bank F is accessible when any bank is active. Common
 ; utility code should go here.
 ; ============================
-.segment "BANKF"
+.segment "FIXED"
 
 bank_load_table:
 	.byte 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+	.byte 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
 
 ; ============================
 ; NMI ISR
@@ -40,7 +43,7 @@ nmi_vector:
 	bit PPUSTATUS			; Check if vblank has finished
 	bne @vbl_done			; Repeat until vblank is over
 
-	lda #%10011011
+	lda ppuctrl_config
 	sta PPUCTRL			; Re-enable NMI
 
 	pla				; Restore registers from stack
@@ -155,7 +158,7 @@ main_entry:
 	; Switch the upper half of PRG memory to Bank E (please see note below)
 	;lda #$0E
 	;sta bank_load_table + $0E
-	bank_load #$0E
+	bank_load #$13
 
 	; Load in a palette
 	ppu_load_bg_palette sample_palette_data
@@ -181,7 +184,7 @@ main_entry:
 ;	lda #$24
 ;	jsr load_Room
 
-	lda #$0E
+	lda #$13
 	sta current_nt_bank
 	lda #<ntcomp
 	sta current_nt
@@ -207,6 +210,14 @@ main_entry:
 	sta player_xpos
 	sta player_ypos
 
+	; Make some noise
+	;ldx #<testmus_music_data
+	;ldy #>testmus_music_data
+	;lda #$01
+	;jsr FamiToneInit
+	;lda #0
+	;jsr FamiToneMusicPlay
+
 	; Bring the PPU back up.
 	jsr wait_nmi
 	ppu_enable
@@ -230,6 +241,7 @@ main_top_loop:
 
 	; Re-enable PPU for the start of a new frame
 	ppu_enable
+
 	jmp main_top_loop; loop forever
 
 
@@ -330,8 +342,11 @@ eval_leaving_room:
 	sta player_xpos
 	rts
 
+testmus:
+	.include "../resources/testmus.asm"
 
-.segment "BANKE"
+
+.segment "BANK13"
 
 ; The sample graphics resources.
 sample_chr_data:

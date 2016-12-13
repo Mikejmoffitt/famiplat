@@ -1,4 +1,4 @@
-.segment "BANKF"
+.segment "FIXED"
 
 wait_nmi:
 	lda vblank_flag

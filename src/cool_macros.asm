@@ -1,14 +1,3 @@
-PPUCTRL			= $2000
-PPUMASK			= $2001
-PPUSTATUS		= $2002
-OAMADDR			= $2003
-OAMDATA			= $2004
-PPUSCROLL		= $2005
-PPUADDR			= $2006
-PPUDATA			= $2007
-OAMDMA			= $4014
-DMCFREQ			= $4010
-
 ; A button comparison table for reading joypads
 BUTTON_A		= %10000000
 BUTTON_B		= %01000000

@@ -1,6 +1,6 @@
 METASPRITE_MAX_TILES = (24*4)
 
-.segment "BANKF"
+.segment "FIXED"
 ; Draws a metasprite to the screen. 
 ; Preconditions:
 ;	Put screen X in temp and screen Y in temp2.

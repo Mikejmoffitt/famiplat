@@ -1,0 +1,2 @@
+.include "famitone.asm"
+

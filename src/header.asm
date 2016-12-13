@@ -6,7 +6,7 @@
 .byte "NES", $1a
 
 ; Size of PRG in 16 KB units
-.byte 16
+.byte 32
 
 ; Size of CHR in 8 KB units (0 = CHR RAM)
 .byte 0

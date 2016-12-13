@@ -18,6 +18,7 @@ pad_1:			.res 1
 pad_1_prev:		.res 1
 pad_2:			.res 1
 pad_2_prev:		.res 1
+FT_TEMP:		.res 3
 
 player_dir:		.res 1		; 0 when facing right, 1 when facing left
 player_dx:		.res 2		; 8.8 dx
@@ -34,6 +35,9 @@ player_is_grounded:	.res 1		; When non-zero, player is on the ground
 
 
 .segment "RAM"
+
+; Famitone stuff
+FT_BASE_ADR:		.res 256
 
 ; Flags for PPU control
 ppumask_config:	.res 1
@@ -59,3 +63,4 @@ current_nt_bank:.res 1
 .segment "WRAM"
 
 col_map:	.res 1024
+

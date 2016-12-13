@@ -14,7 +14,7 @@ TOPLEVEL := main.asm
 
 EXECUTABLE := plat.nes
 
-.PHONY: all build $(EXECUTABLE)
+.PHONY: all resources build $(EXECUTABLE)
 
 build: $(EXECUTABLE)
 
@@ -22,6 +22,10 @@ all: $(EXECUTABLE)
 
 clean:
 	rm -f main.nes main.o $(LISTNAME) $(LABELSNAME) $(MAPNAME)
+
+resources:
+	-tools/text2data/text2data -ca65 raw_resources/testmus.txt
+	mv raw_resources/testmus.s resources/testmus.asm
 
 $(EXECUTABLE):
 	$(AS) $(SRCDIR)/$(TOPLEVEL) $(ASFLAGS) -I $(SRCDIR) -l $(LISTNAME) -o $(OBJNAME)

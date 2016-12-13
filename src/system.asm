@@ -1,0 +1,6 @@
+.include "system/header.asm"
+.include "system/stub.asm"
+.include "system/cool_macros.asm"
+.include "system/utils.asm"
+.include "system/rle_decomp.asm"
+.include "system/metasprite.asm"
