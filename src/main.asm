@@ -1,14 +1,20 @@
 ; iNES Header
+.segment "FIXED"
+
+bank_load_table:
+	.byte 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+	.byte 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
 .include "nes.asm"
 .include "header.asm"
 .include "ram.asm"
-.include "sound.asm"
 .include "cool_macros.asm"
 .include "utils.asm"
 .include "bg.asm"
 .include "metasprite.asm"
 .include "player.asm"
+.include "sound.asm"
 
+.segment "FIXED"
 ; ============================
 ; PRG bank F
 ;
@@ -16,11 +22,6 @@
 ; Subsequently all code in Bank F is accessible when any bank is active. Common
 ; utility code should go here.
 ; ============================
-.segment "FIXED"
-
-bank_load_table:
-	.byte 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-	.byte 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
 
 ; ============================
 ; NMI ISR
@@ -33,6 +34,7 @@ bank_load_table:
 ; ============================
 nmi_vector:
 	pha				; Preseve A
+	php
 	
 	lda #$00
 	sta PPUCTRL			; Disable NMI
@@ -46,6 +48,7 @@ nmi_vector:
 	lda ppuctrl_config
 	sta PPUCTRL			; Re-enable NMI
 
+	plp
 	pla				; Restore registers from stack
 
 	rti
@@ -210,13 +213,15 @@ main_entry:
 	sta player_xpos
 	sta player_ypos
 
+	lda $5555
 	; Make some noise
-	;ldx #<testmus_music_data
-	;ldy #>testmus_music_data
-	;lda #$01
-	;jsr FamiToneInit
-	;lda #0
-	;jsr FamiToneMusicPlay
+	ldx #<testmus_music_data
+	ldy #>testmus_music_data
+	lda #80
+	jsr FamiToneInit
+	;lda #80
+	lda #$00
+	jsr FamiToneMusicPlay
 
 	; Bring the PPU back up.
 	jsr wait_nmi
@@ -229,6 +234,7 @@ main_top_loop:
 	jsr player_movement
 	jsr player_render
 	jsr eval_leaving_room
+	jsr FamiToneUpdate
 
 	; End of game logic frame; wait for NMI (vblank) to begin
 	jsr wait_nmi

@@ -61,6 +61,6 @@ current_nt:	.res 2
 current_nt_bank:.res 1
 
 .segment "WRAM"
-
 col_map:	.res 1024
+
 
