@@ -46,14 +46,19 @@
 	bne :-
 .endmacro
 
+; =======================================
+; Routine to decompress an RLE16 nametable into $2000 and put a shadow copy in
+; col_map as well.
+;	A: Bank map is stored in
+;	X: Low byte of NT address
+;	Y: High byte of NT address
 decomp_room:
-	bank_load current_nt_bank
-
 	; Get the nametable address in ZP
-	lda current_nt
-	sta temp6
-	lda current_nt+1
-	sta temp7
+	stx temp
+	sty temp7
+	; Load bank for NT
+	tax
+	sta bank_load_table, x
 	
 	; Get set up to write to the nametable
 	bit PPUSTATUS ; Reset address latch
@@ -85,6 +90,6 @@ decomp_room:
 	lda #<col_map
 	sta current_nt
 	lda #>col_map
-	sta current_nt
+	sta current_nt+1
 	
 	rts

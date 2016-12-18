@@ -33,6 +33,15 @@ PL_SIDE_M2 = <-14
 PL_SIDE_B = <-6
 
 .segment "FIXED"
+
+player_init:
+	lda #$80
+	sta player_xpos + 1
+	sta player_ypos + 1
+	sta player_xpos
+	sta player_ypos
+rts
+
 .include "player_movement.asm"
 .include "player_anims.asm"
 .include "player_render.asm"

@@ -144,6 +144,13 @@ reset_vector:
 	inx
 	lsr
 	bne @build_controller_table
+
+; Set a default for scroll
+	lda #$00
+	sta xscroll
+	sta yscroll
+	sta yscroll+1
+	sta xscroll+1
 	jmp main_entry ; GOTO main loop
 
 ; =============================================================================
@@ -152,15 +159,8 @@ reset_vector:
 ; ====                                                                     ====
 ; =============================================================================
 main_entry:
-
-	; The PPU must be disabled before we write to VRAM. This is done during
-	; the vertical blanking interval typically, so we do not need to blank
-	; the video in the middle of a frame.
 	ppu_disable
 
-	; Switch the upper half of PRG memory to Bank E (please see note below)
-	;lda #$0E
-	;sta bank_load_table + $0E
 	bank_load #$13
 
 	; Load in a palette
@@ -168,52 +168,21 @@ main_entry:
 	ppu_load_spr_palette sample_spr_palette_data
 	
 	; Load in CHR tiles to VRAM for BG
-	; Remember, BG data starts at $0000 - we must specify the upper byte of
-	; the destination address ($00).
 	ppu_write_32kbit sample_chr_data, #$00
 
 	; and for sprites, which start at $1000.
 	ppu_write_32kbit sample_chr_data + $1000, #$10
 
-	; Finally, bring in a nametable so the background will draw something.
-	; The first nametable begins at $2000, so we specify $20(00).
+	; Set up nametable for decompression:
 
-;	lda #$0E
-;	sta current_nt_bank
-;	lda #<nt2
-;	sta current_nt
-;	lda #>nt2
-;	sta current_nt+1
-;	lda #$24
-;	jsr load_Room
-
+; Bank where 
 	lda #$13
-	sta current_nt_bank
-	lda #<ntcomp
-	sta current_nt
-	lda #>ntcomp
-	sta current_nt+1
-	lda #$20
+	ldx #<ntcomp
+	ldy #>ntcomp
 	jsr decomp_room
+
 	
-	lda #<col_map
-	sta current_nt
-	lda #>col_map
-	sta current_nt+1
-
-	lda #$00
-	sta xscroll
-	sta yscroll
-	sta yscroll+1
-	sta xscroll+1
-
-	lda #$80
-	sta player_xpos + 1
-	sta player_ypos + 1
-	sta player_xpos
-	sta player_ypos
-
-	lda $5555
+; Sound test
 	; Make some noise
 	ldx #<testmus_music_data
 	ldy #>testmus_music_data
@@ -222,6 +191,8 @@ main_entry:
 	;lda #80
 	lda #$00
 	jsr FamiToneMusicPlay
+
+	jsr player_init
 
 	; Bring the PPU back up.
 	jsr wait_nmi

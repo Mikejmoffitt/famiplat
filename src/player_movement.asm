@@ -12,6 +12,25 @@ player_movement:
 	rts
 
 ; =====================================
+; Perform collision checks for one frame.
+player_col_check:
+	jsr player_col_check_sides
+	jsr player_col_check_top
+	jsr player_col_check_ground
+	rts
+
+; =====================================
+; Commit dx, dy, and ddx (gravity)
+player_apply_deltas:
+	sum16 player_xpos, player_dx
+	sum16 player_ypos, player_dy
+	lda player_is_grounded
+	bne @nograv
+	add16 player_dy, #PL_GRAVITY
+@nograv:
+	rts
+
+; =====================================
 ; Decelerate the player running on the ground
 player_decel:
 ; Determine sign of dx
@@ -168,7 +187,7 @@ player_nametable_check:
 	sta addr_ptr
 	lda current_nt+1
 	sta addr_ptr+1
-	bank_load current_nt_bank
+	;bank_load current_nt_bank
 
 	; Factor in positional arguments
 	tya
@@ -204,13 +223,15 @@ player_nametable_check:
 ; =====================================
 ; Checks for collision above the player
 player_col_check_top:
+	; Check if dy is nonzero and negative
 	lda player_dy+1
-	bne @nonzero_dy
-	lda player_dy+1
+	bmi @nonzero_dy
+	lda player_dy
 	bne @nonzero_dy
 	rts
 
 @nonzero_dy:
+
 	ldx #PL_TOP_L
 	ldy #PL_TOP_DIST
 	jsr player_nametable_check
@@ -255,7 +276,19 @@ player_col_check_ground:
 	lda #$00
 	sta player_is_grounded
 	rts
+
 : ; A ground collision was made:
+
+	; Mark player as grounded
+	lda #$01
+	sta player_is_grounded
+
+	; Only continue if dy is greater or equal to 0.
+	lda player_dy+1
+	bpl @do_collision_reaction
+	rts
+
+@do_collision_reaction:
 
 	;Snap to 8px boundary
 	lda player_ypos+1
@@ -270,9 +303,6 @@ player_col_check_ground:
 	sta player_dy
 	sta player_dy+1
 
-	; Mark player as grounded
-	lda #$01
-	sta player_is_grounded
 	rts
 
 ; =====================================
@@ -339,20 +369,4 @@ player_col_check_sides:
 	sec
 	sbc #$01
 	sta player_xpos+1
-	rts
-
-; =====================================
-; Perform collision checks for one frame.
-player_col_check:
-	jsr player_col_check_sides
-	jsr player_col_check_top
-	jsr player_col_check_ground
-	rts
-
-; =====================================
-; Commit dx, dy, and ddx (gravity)
-player_apply_deltas:
-	sum16 player_xpos, player_dx
-	sum16 player_ypos, player_dy
-	add16 player_dy, #PL_GRAVITY
 	rts

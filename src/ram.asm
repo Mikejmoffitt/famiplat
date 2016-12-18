@@ -36,6 +36,8 @@ player_is_grounded:	.res 1		; When non-zero, player is on the ground
 
 .segment "RAM"
 
+
+
 ; Famitone stuff
 FT_BASE_ADR:		.res 256
 
@@ -62,5 +64,3 @@ current_nt_bank:.res 1
 
 .segment "WRAM"
 col_map:	.res 1024
-
-
