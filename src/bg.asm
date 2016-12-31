@@ -54,7 +54,7 @@
 ;	Y: High byte of NT address
 decomp_room:
 	; Get the nametable address in ZP
-	stx temp
+	stx temp6
 	sty temp7
 	; Load bank for NT
 	tax
